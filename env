@@ -1,0 +1,9 @@
+# El archivo ".env" real NUNCA debe subirse a git — agrégalo a tu .gitignore.
+
+SUPABASE_URL=https://coetncgxjkdirwvrdgor.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvZXRuY2d4amtkaXJ3dnJkZ29yIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTQ3NjgwMCwiZXhwIjoyMDk3MDUyODAwfQ.LPVxgDxFkgryQKcl5TKVldQOBI7bsQrRqU1e9DJuckI
+
+# Genera una clave secreta propia y única para firmar los tokens JWT.
+JWT_SECRET_KEY=6aee06240c19e0747349a42f6ef93f3cea8e81b6230092e8f44900e1f1f753aa
+JWT_ALGORITHM=HS256
+JWT_EXPIRE_MINUTES=120
