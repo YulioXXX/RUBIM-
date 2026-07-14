@@ -58,6 +58,26 @@ def crear_token_acceso(datos: dict, expires_minutes: Optional[int] = None) -> st
 
 
 def _decodificar_token(token: str) -> dict:
+    """
+    Decodifica y valida la firma/expiración de CUALQUIER token del sistema
+    — tanto los de personal (routers/auth.py, payload con "usuario"/"rol")
+    como los de cliente (routers/portal_cliente.py, payload con
+    "telefono"/"cliente_id"). Por eso esta función NO debe asumir qué
+    campos específicos trae el payload más allá de "exp" (que ya valida
+    jwt.decode() automáticamente) — esa validación de campos específicos
+    le corresponde a cada dependency de más abajo (obtener_usuario_actual
+    vs. obtener_cliente_actual), que sí sabe qué tipo de token espera.
+
+    CORREGIDO: antes había un "if payload.get('usuario') is None: raise
+    credenciales_invalidas" aquí mismo. Como los tokens de CLIENTE nunca
+    traen una clave "usuario" (solo "telefono", "cliente_id", "tipo": 
+    "cliente" — ver login_cliente() en portal_cliente.py), esa validación
+    rechazaba SIEMPRE cualquier request autenticado desde la app móvil,
+    aunque el token fuera perfectamente válido y no hubiera expirado. Por
+    eso el login funcionaba (no pasa por aquí) pero cualquier pantalla
+    protegida después (Mi Trámite, Mis Citas) fallaba de inmediato con
+    "Sesión inválida o expirada."
+    """
     credenciales_invalidas = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Sesión inválida o expirada. Vuelve a iniciar sesión.",
@@ -65,8 +85,9 @@ def _decodificar_token(token: str) -> dict:
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        if payload.get("usuario") is None:
-            raise credenciales_invalidas
+        # jwt.decode() ya revisa la firma Y la fecha "exp" por sí solo, y
+        # lanza JWTError si algo no calza — no hace falta ninguna
+        # verificación manual adicional aquí.
         return payload
     except JWTError:
         raise credenciales_invalidas
